@@ -9,7 +9,7 @@ extension ZEGBot {
                 let greeting: String = """
                 歡迎 \(user.firstName)！
                 💕🎊🎉👋😃
-                發送 /help
+                㩒 /help
                 我就會即時出現
                 """
                 
@@ -38,6 +38,8 @@ extension ZEGBot {
                         handleAdd(message: message, text: text)
                 } else if text.hasPrefix("/test") {
                         handleTest(message: message)
+                } else if text.hasPrefix("/feedback") {
+                        handleFeedback(message: message, text: text)
                 } else {
                         fallback(message: message, text: text)
                 }
@@ -51,11 +53,17 @@ extension ZEGBot {
                 我係一個粵拼bot，
                 有咩可以幫到你？😃
                 
-                發送「/ping 字詞」，
+                發「/ping +要查嘅字詞」，
                 我就會回覆相應嘅粵拼。
 
-                發送 「/add 詞條」，
+                發 「/add +要加嘅詞條」，
                 可向我哋建議添加粵拼詞條。
+
+                㩒 /app 獲取
+                粵拼輸入法(iOS)嘅 App Store 連結。
+
+                發 「/feedback +你嘅反饋」，
+                向 粵拼bot 提出反饋同建議。
                 """
                 
                 do {
@@ -136,11 +144,11 @@ extension ZEGBot {
                         }
                         return
                 }
-                logger.info("Recived phrase suggestion: \(phrase)")
+                logger.info("Received phrase suggestion: \(phrase)")
                 let responseText: String = """
                 收到詞條建議：
                 「 \(phrase) 」
-                我哋會盡快處理嘅嘞。
+                我哋會儘快處理嘅嘞。
                 多謝你嘅參與！ 💖
                 """
 
@@ -158,17 +166,30 @@ extension ZEGBot {
                         logger.error("\(error.localizedDescription)")
                 }
         }
-        
-        private func fallback(message: Message, text: String) {
-                do {
-                        logger.notice("Incomprehensible message.")
-                        if message.chat.id > 0 || text.contains("@jyut_bot") {
-                                try send(message: "我聽唔明😔", to: message.chat)
-                                logger.info("Called fallback()")
+        private func handleFeedback(message: Message, text: String) {
+                let textContent: String = String(text.dropFirst(9)).trimmingCharacters(in: CharacterSet(charactersIn: " "))
+                guard !(textContent.isEmpty || textContent == "@jyut_bot") else {
+                        logger.notice("Called feedback() with no content.")
+                        let response: String = #"/feedback +你嘅反饋"#
+                        do {
+                                try send(message: response, to: message.chat)
+                        } catch {
+                                logger.error("\(error.localizedDescription)")
                         }
+                        return
+                }
+                logger.info("Received feedback message: \(textContent)")
+                save(feedback: textContent)
+        }
+        private func fallback(message: Message, text: String) {
+                logger.notice("Incomprehensible message.")
+                guard message.chat.id > 0 || text.contains("@jyut_bot") else { return }
+                do {
+                        try send(message: "我聽唔明😔", to: message.chat)
                 } catch {
                         logger.error("\(error.localizedDescription)")
                 }
+                logger.info("Sent fallback() message back.")
         }
 
         private func append(phrase: String) {
@@ -179,6 +200,7 @@ extension ZEGBot {
                         do {
                                 try content.write(to: url, atomically: true, encoding: .utf8)
                         } catch {
+                                logger.error("Can not create suggestions.txt")
                                 logger.error("\(error.localizedDescription)")
                         }
                         logger.info("Created suggestions.txt")
@@ -200,6 +222,39 @@ extension ZEGBot {
                         logger.info("Saved phrase to suggestions.txt")
                 } else {
                         logger.error("Can not handle writing to suggestions.txt")
+                }
+        }
+        private func save(feedback: String) {
+                let path: String = "/srv/jyutbot/feedback.txt"
+                let url: URL = URL(fileURLWithPath: path, isDirectory: false)
+                let head: String = "\(Date())\n"
+                let content: String = head + feedback + "\n\n"
+                guard FileManager.default.fileExists(atPath: url.path) else {
+                        do {
+                                try content.write(to: url, atomically: true, encoding: .utf8)
+                        } catch {
+                                logger.error("Can not create feedback.txt")
+                                logger.error("\(error.localizedDescription)")
+                        }
+                        logger.info("Created feedback.txt")
+                        logger.info("Saved feddback message to feedback.txt")
+                        return
+                }
+                guard let feedbackData: Data = content.data(using: .utf8) else {
+                        logger.error("Can not convert feedback message to Data. message: \(feedback)")
+                        return
+                }
+                if let handle: FileHandle = try? FileHandle(forWritingTo: url) {
+                        handle.seekToEndOfFile()
+                        handle.write(feedbackData)
+                        do {
+                                try handle.close()
+                        } catch {
+                                logger.error("\(error.localizedDescription)")
+                        }
+                        logger.info("Saved feedback message to feedback.txt")
+                } else {
+                        logger.error("Can not handle writing to feedback.txt")
                 }
         }
 }
