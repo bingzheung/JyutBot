@@ -17,7 +17,7 @@ do {
                         guard let sentDate: Int = newUpdate.message?.date else { return }
                         let distance: Double = Date().timeIntervalSince1970.distance(to: Double(sentDate))
                         guard abs(distance) < 60 else {
-                                logger.notice("Drop outdated message.")
+                                logger.notice("Dropped outdated message.")
                                 return
                         }
                         if let newChatMember: User = newUpdate.message?.newChatMember {

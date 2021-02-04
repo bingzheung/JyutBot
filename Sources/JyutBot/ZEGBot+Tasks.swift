@@ -27,7 +27,7 @@ extension ZEGBot {
                 // if let leftChatMember: User = message.leftChatMember {}
                 
                 guard let text: String = message.text, !text.isEmpty else { return }
-                
+
                 if text.contains("/start") || text.contains("/help") || text == "?" {
                         handleStartHelp(message: message)
                 } else if text.hasPrefix("/app") {
@@ -44,7 +44,7 @@ extension ZEGBot {
                         fallback(message: message, text: text)
                 }
         }
-        
+
         private func handleStartHelp(message: Message) {
                 guard let from: User = message.from else { return }
                 
@@ -88,6 +88,10 @@ extension ZEGBot {
         }
         
         private func handlePing(message: Message, text: String) {
+                guard text.count < 10000 else {
+                        reject(message: message)
+                        return
+                }
                 let specials: String = #"abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLKMNOPQRSTUVWXYZ_0123456789-:;.,?~!@#$%^&*/\<>{}[]()+=`'"’“•。，；？！、：～（）〈〉《》「」『』〔〕〖〗【】"#
                 let text: String = text.filter { !specials.contains($0) }
                 guard !(text.isEmpty) else {
@@ -134,6 +138,10 @@ extension ZEGBot {
                 return (jyutpings.first ?? "?", matchedCount)
         }
         private func handleAdd(message: Message, text: String) {
+                guard text.count < 10000 else {
+                        reject(message: message)
+                        return
+                }
                 let phrase: String = String(text.dropFirst(4)).trimmingCharacters(in: CharacterSet(charactersIn: " \n"))
                 guard !phrase.isEmpty else {
                         logger.notice("Called add() with no phrase.")
@@ -167,6 +175,10 @@ extension ZEGBot {
                 }
         }
         private func handleFeedback(message: Message, text: String) {
+                guard text.count < 10000 else {
+                        reject(message: message)
+                        return
+                }
                 let textContent: String = String(text.dropFirst(9)).trimmingCharacters(in: CharacterSet(charactersIn: " "))
                 guard !(textContent.isEmpty || textContent == "@jyut_bot") else {
                         logger.notice("Called feedback() with no content.")
@@ -193,14 +205,18 @@ extension ZEGBot {
                 }
         }
         private func fallback(message: Message, text: String) {
+                // group chat id < 0
+                guard message.chat.id > 0 else {
+                        logger.notice("Incomprehensible message from group chat.")
+                        return
+                }
                 logger.notice("Incomprehensible message.")
-                guard message.chat.id > 0 || text.contains("@jyut_bot") else { return }
                 do {
-                        try send(message: "我聽唔明😔", to: message.chat)
+                        try send(message: "我聽唔明 😥", to: message.chat)
                 } catch {
                         logger.error("\(error.localizedDescription)")
                 }
-                logger.info("Sent fallback() message back.")
+                logger.info("Sent fallback() response back.")
         }
 
         private func append(phrase: String) {
@@ -267,5 +283,14 @@ extension ZEGBot {
                 } else {
                         logger.error("Can not handle writing to feedback.txt")
                 }
+        }
+        private func reject(message: Message) {
+                let response: String = #"唔好發咁長，我處理唔到 😥"#
+                do {
+                        try send(message: response, to: message.chat)
+                } catch {
+                        logger.error("\(error.localizedDescription)")
+                }
+                logger.notice("Rejected a very large message.")
         }
 }
