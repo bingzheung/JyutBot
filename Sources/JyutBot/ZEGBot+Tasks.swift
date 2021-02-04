@@ -34,6 +34,8 @@ extension ZEGBot {
                         handleApp(message: message)
                 } else if text.contains("/ping") {
                         handlePing(message: message, text: text)
+                } else if text.hasPrefix("/add") {
+                        handleAdd(message: message, text: text)
                 } else if text.hasPrefix("/test") {
                         handleTest(message: message)
                 } else {
@@ -50,7 +52,10 @@ extension ZEGBot {
                 有咩可以幫到你？😃
                 
                 發送「/ping 字詞」，
-                我就會回覆相應嘅粵拼
+                我就會回覆相應嘅粵拼。
+
+                發送 「/add 詞條」，
+                可向我哋建議添加相應嘅粵拼詞條。
                 """
                 
                 do {
@@ -120,7 +125,32 @@ extension ZEGBot {
                 }
                 return (jyutpings.first ?? "?", matchedCount)
         }
-        
+        private func handleAdd(message: Message, text: String) {
+                let phrase: String = String(text.dropFirst(4)).trimmingCharacters(in: CharacterSet(charactersIn: " \n"))
+                guard !phrase.isEmpty else {
+                        logger.notice("Called add() with no phrase.")
+                        do {
+                                try send(message: "/add +你想添加嘅詞條", to: message.chat)
+                        } catch {
+                                logger.error("\(error.localizedDescription)")
+                        }
+                        return
+                }
+                logger.info("Recived phrase suggestion: \(phrase)")
+                let responseText: String = """
+                收到詞條建議：
+                「 \(phrase) 」
+                我哋會盡快處理嘅嘞。
+                多謝你嘅參與！ 💖
+                """
+
+                do {
+                        try send(message: responseText, to: message.chat)
+                } catch {
+                        logger.error("\(error.localizedDescription)")
+                }
+                append(phrase: phrase)
+        }
         private func handleTest(message: Message) {
                 do {
                         try send(message: "absolutely", to: message.chat)
@@ -138,6 +168,38 @@ extension ZEGBot {
                         }
                 } catch {
                         logger.error("\(error.localizedDescription)")
+                }
+        }
+
+        private func append(phrase: String) {
+                let path: String = "/srv/jyutbot/suggestions.txt"
+                let url: URL = URL(fileURLWithPath: path, isDirectory: false)
+                let content: String = phrase + "\n"
+                guard FileManager.default.fileExists(atPath: url.path) else {
+                        do {
+                                try content.write(to: url, atomically: true, encoding: .utf8)
+                        } catch {
+                                logger.error("\(error.localizedDescription)")
+                        }
+                        logger.info("Created suggestions.txt")
+                        logger.info("Saved phrase to suggestions.txt")
+                        return
+                }
+                guard let phraseData: Data = content.data(using: .utf8) else {
+                        logger.error("Can not convert phrase content to Data. phrase: \(phrase)")
+                        return
+                }
+                if let handle: FileHandle = try? FileHandle(forWritingTo: url) {
+                        handle.seekToEndOfFile()
+                        handle.write(phraseData)
+                        do {
+                                try handle.close()
+                        } catch {
+                                logger.error("\(error.localizedDescription)")
+                        }
+                        logger.info("Saved phrase to suggestions.txt")
+                } else {
+                        logger.error("Can not handle writing to suggestions.txt")
                 }
         }
 }
