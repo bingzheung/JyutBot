@@ -180,6 +180,17 @@ extension ZEGBot {
                 }
                 logger.info("Received feedback message: \(textContent)")
                 save(feedback: textContent)
+                
+                let responseText: String = """
+                收到，記低咗。
+                多謝你嘅反饋同建議！
+                我哋會繼續完善呢個bot嘅
+                """
+                do {
+                        try send(message: responseText, to: message.chat)
+                } catch {
+                        logger.error("\(error.localizedDescription)")
+                }
         }
         private func fallback(message: Message, text: String) {
                 logger.notice("Incomprehensible message.")
