@@ -63,7 +63,7 @@ extension ZEGBot {
                 粵拼輸入法(iOS)嘅 App Store 連結。
 
                 發 「/feedback +你嘅反饋」，
-                向 粵拼bot 提出反饋同建議。
+                向 粵拼bot 提出反饋同建議
                 """
                 
                 do {
@@ -149,7 +149,7 @@ extension ZEGBot {
                 收到詞條建議：
                 「 \(phrase) 」
                 我哋會儘快處理嘅嘞。
-                多謝你嘅參與！ 💖
+                多謝你嘅參與同貢獻！ 💖
                 """
 
                 do {
