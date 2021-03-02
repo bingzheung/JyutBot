@@ -21,7 +21,7 @@ do {
                                 return
                         }
                         if let newChatMember: User = newUpdate.message?.newChatMember {
-                                bot.greet(user: newChatMember, update: newUpdate)
+                                // bot.greet(user: newChatMember, update: newUpdate)
                         } else {
                                 bot.handle(update: newUpdate)
                         }
