@@ -19,7 +19,7 @@ extension ZEGBot {
                         logger.error("\(error.localizedDescription)")
                 }
         }
-        
+
         func handle(update: Update) {
                 guard let message: Message = update.message else { return }
                 
@@ -73,7 +73,7 @@ extension ZEGBot {
                 }
                 
         }
-        
+
         private func handleApp(message: Message) {
                 let appInformation: String = """
                 前往 App Store 下載粵拼輸入法：
@@ -86,7 +86,7 @@ extension ZEGBot {
                         logger.error("\(error.localizedDescription)")
                 }
         }
-        
+
         private func handlePing(message: Message, text: String) {
                 guard text.count < 10000 else {
                         reject(message: message)
@@ -142,7 +142,7 @@ extension ZEGBot {
                         reject(message: message)
                         return
                 }
-                let phrase: String = String(text.dropFirst(4)).trimmingCharacters(in: CharacterSet(charactersIn: " \n"))
+                let phrase: String = String(text.dropFirst(4)).replacingOccurrences(of: "@jyut_bot", with: "").trimmingCharacters(in: CharacterSet(charactersIn: " \n"))
                 guard !phrase.isEmpty else {
                         logger.notice("Called add() with no phrase.")
                         do {
