@@ -2,6 +2,7 @@ import Foundation
 import ZEGBot
 
 extension ZEGBot {
+        /*
         func greet(user: User, update: Update) {
                 guard !(user.isBot) else { return }
                 guard let message: Message = update.message else { return }
@@ -9,7 +10,7 @@ extension ZEGBot {
                 let greeting: String = """
                 歡迎 \(user.firstName)！
                 💕🎊🎉👋😃
-                㩒 /help
+                撳 /help
                 我就會即時出現
                 """
                 
@@ -19,6 +20,7 @@ extension ZEGBot {
                         logger.error("\(error.localizedDescription)")
                 }
         }
+        */
 
         func handle(update: Update) {
                 guard let message: Message = update.message else { return }
@@ -28,7 +30,7 @@ extension ZEGBot {
                 
                 guard let text: String = message.text, !text.isEmpty else { return }
 
-                if text.contains("/start") || text.contains("/help") || text == "?" {
+                if text.contains("/start") || text.contains("/help") {
                         handleStartHelp(message: message)
                 } else if text.hasPrefix("/app") {
                         handleApp(message: message)
@@ -105,7 +107,7 @@ extension ZEGBot {
                 var responseText: String = "\(text)："
                 let matchedJyutpings: [String] = JyutpingProvider.match(for: text)
                 if !(matchedJyutpings.isEmpty) {
-                        let allJyutpings: String = matchedJyutpings.reduce("") { $0 + "\n" + $1 }
+                        let allJyutpings: String = matchedJyutpings.joined(separator: "\n")
                         responseText += allJyutpings
                 } else {
                         var chars: String = text
@@ -218,7 +220,20 @@ extension ZEGBot {
                 logger.info("Sent fallback() response back.")
         }
 
-        private func append(phrase: String) {
+        private func reject(message: Message) {
+                let response: String = #"唔好發咁長，我處理唔到 😥"#
+                do {
+                        try send(message: response, to: message.chat)
+                } catch {
+                        logger.error("\(error.localizedDescription)")
+                }
+                logger.notice("Rejected a very large message.")
+        }
+}
+
+
+private extension ZEGBot {
+        func append(phrase: String) {
                 let path: String = "/srv/jyutbot/suggestions.txt"
                 let url: URL = URL(fileURLWithPath: path, isDirectory: false)
                 let content: String = phrase + "\n"
@@ -250,7 +265,7 @@ extension ZEGBot {
                         logger.error("Can not handle writing to suggestions.txt")
                 }
         }
-        private func save(feedback: String) {
+        func save(feedback: String) {
                 let path: String = "/srv/jyutbot/feedback.txt"
                 let url: URL = URL(fileURLWithPath: path, isDirectory: false)
                 let head: String = "\(Date())\n"
@@ -282,14 +297,5 @@ extension ZEGBot {
                 } else {
                         logger.error("Can not handle writing to feedback.txt")
                 }
-        }
-        private func reject(message: Message) {
-                let response: String = #"唔好發咁長，我處理唔到 😥"#
-                do {
-                        try send(message: response, to: message.chat)
-                } catch {
-                        logger.error("\(error.localizedDescription)")
-                }
-                logger.notice("Rejected a very large message.")
         }
 }

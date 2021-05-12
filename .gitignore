@@ -6,5 +6,6 @@ Package.pins
 .swiftpm/
 /*.xcodeproj
 xcuserdata/
+DerivedData/
 .vscode/
 .idea/
