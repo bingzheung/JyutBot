@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.4
 
 import PackageDescription
 
@@ -10,11 +10,11 @@ let package = Package(
         ],
         dependencies: [
                 .package(name: "ZEGBot", url: "https://github.com/ShaneQi/ZEGBot.git", from: "4.2.6"),
-                .package(name: "swift-log", url: "https://github.com/apple/swift-log.git", from: "1.4.0"),
+                .package(name: "swift-log", url: "https://github.com/apple/swift-log.git", from: "1.4.2"),
                 .package(name: "SQLite3", url: "https://github.com/ososoio/SQLite3.git", from: "1.0.0")
         ],
         targets: [
-                .target(
+                .executableTarget(
                         name: "JyutBot",
                         dependencies: [
                                 .product(name: "ZEGBot", package: "ZEGBot"),
@@ -36,10 +36,10 @@ let package = Package(
         ],
         dependencies: [
                 .package(name: "ZEGBot", url: "https://github.com/ShaneQi/ZEGBot.git", from: "4.2.6"),
-                .package(name: "swift-log", url: "https://github.com/apple/swift-log.git", from: "1.4.0")
+                .package(name: "swift-log", url: "https://github.com/apple/swift-log.git", from: "1.4.2")
         ],
         targets: [
-                .target(
+                .executableTarget(
                         name: "JyutBot",
                         dependencies: [
                                 .product(name: "ZEGBot", package: "ZEGBot"),

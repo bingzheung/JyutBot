@@ -59,7 +59,7 @@ extension ZEGBot {
                 發 「/add +要加嘅詞條」，
                 可向我哋建議添加粵拼詞條。
 
-                㩒 /app 獲取
+                撳 /app 獲取
                 粵拼輸入法(iOS)嘅 App Store 連結。
 
                 發 「/feedback +你嘅反饋」，
@@ -92,8 +92,7 @@ extension ZEGBot {
                         reject(message: message)
                         return
                 }
-                let specials: String = #"abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLKMNOPQRSTUVWXYZ_0123456789-:;.,?~!@#$%^&*/\<>{}[]()+=`'"’“•。，；？！、：～（）〈〉《》「」『』〔〕〖〗【】"#
-                let text: String = text.filter { !specials.contains($0) }
+                let text: String = text.filter { !($0.isASCII || $0.isPunctuation || $0.isWhitespace) }
                 guard !(text.isEmpty) else {
                         logger.notice("Called ping() with no Cantonese.")
                         do {
