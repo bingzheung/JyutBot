@@ -13,7 +13,7 @@ extension ZEGBot {
                 撳 /help
                 我就會即時出現
                 """
-                
+
                 do {
                         try send(message: greeting, to: message.chat)
                 } catch {
@@ -24,10 +24,10 @@ extension ZEGBot {
 
         func handle(update: Update) {
                 guard let message: Message = update.message else { return }
-                
+
                 // if let _ = message.groupChatCreated {}
                 // if let leftChatMember: User = message.leftChatMember {}
-                
+
                 guard let text: String = message.text, !text.isEmpty else { return }
 
                 if text.contains("/start") || text.contains("/help") {
@@ -49,12 +49,12 @@ extension ZEGBot {
 
         private func handleStartHelp(message: Message) {
                 guard let from: User = message.from else { return }
-                
+
                 let response: String = """
                 你好， \(from.firstName)！
                 我係一個粵拼bot，
                 有咩可以幫到你？😃
-                
+
                 發「/ping +要查嘅字詞」，
                 我就會回覆相應嘅粵拼。
 
@@ -67,11 +67,11 @@ extension ZEGBot {
                 發 「/feedback +你嘅反饋」，
                 向 粵拼bot 提出反饋同建議
                 """
-                
+
                 do {
                         try send(message: response, to: message.chat)
                 } catch {
-                        logger.error("\(error.localizedDescription)")
+                        logger.error("Bot.handleStartHelp(): \(error.localizedDescription)")
                 }
                 
         }
@@ -81,11 +81,10 @@ extension ZEGBot {
                 前往 App Store 下載粵拼輸入法：
                 https://apps.apple.com/app/id1509367629
                 """
-
                 do {
                         try send(message: appInformation, to: message.chat)
                 } catch {
-                        logger.error("\(error.localizedDescription)")
+                        logger.error("Bot.handleApp(): \(error.localizedDescription)")
                 }
         }
 
@@ -95,36 +94,35 @@ extension ZEGBot {
                         return
                 }
                 let text: String = text.filter { !($0.isASCII || $0.isPunctuation || $0.isWhitespace) }
-                guard !(text.isEmpty) else {
+                guard !text.isEmpty else {
                         logger.notice("Called ping() with no Cantonese.")
                         do {
                                 try send(message: "/ping +粵語字詞", to: message.chat)
                         } catch {
-                                logger.error("\(error.localizedDescription)")
+                                logger.error("Bot.handlePing(): \(error.localizedDescription)")
                         }
                         return
                 }
-                var responseText: String = "\(text)："
+                var responseText: String = "\(text)：\n"
                 let matchedJyutpings: [String] = JyutpingProvider.match(for: text)
-                if !(matchedJyutpings.isEmpty) {
+                if !matchedJyutpings.isEmpty {
                         let allJyutpings: String = matchedJyutpings.joined(separator: "\n")
                         responseText += allJyutpings
                 } else {
                         var chars: String = text
-                        var suggestion: String = "\n"
-                        while !(chars.isEmpty) {
+                        var jyutpings: [String] = []
+                        while !chars.isEmpty {
                                 let leadingMatch = fetchLeadingJyutping(for: chars)
-                                suggestion += leadingMatch.jyutping + " "
+                                jyutpings.append(leadingMatch.jyutping)
                                 chars = String(chars.dropFirst(leadingMatch.charCount))
                         }
-                        suggestion = String(suggestion.dropLast())
-                        responseText += (suggestion.isEmpty ? "__NULL__" : suggestion)
+                        let suggestion: String = jyutpings.joined(separator: " ")
+                        responseText += (suggestion.isEmpty ? "?" : suggestion)
                 }
-                
                 do {
                         try send(message: responseText, to: message.chat)
                 } catch {
-                        logger.error("\(error.localizedDescription)")
+                        logger.error("Bot.handlePing(): \(error.localizedDescription)")
                 }
         }
         private func fetchLeadingJyutping(for words: String) -> (jyutping: String, charCount: Int) {
@@ -149,7 +147,7 @@ extension ZEGBot {
                         do {
                                 try send(message: "/add +你想添加嘅詞條", to: message.chat)
                         } catch {
-                                logger.error("\(error.localizedDescription)")
+                                logger.error("Bot.handleAdd(): \(error.localizedDescription)")
                         }
                         return
                 }
@@ -160,11 +158,10 @@ extension ZEGBot {
                 我哋會儘快處理嘅嘞。
                 多謝你嘅參與同貢獻！ 💖
                 """
-
                 do {
                         try send(message: responseText, to: message.chat)
                 } catch {
-                        logger.error("\(error.localizedDescription)")
+                        logger.error("Bot.handleAdd(): \(error.localizedDescription)")
                 }
                 append(phrase: phrase)
         }
@@ -172,7 +169,7 @@ extension ZEGBot {
                 do {
                         try send(message: "absolutely", to: message.chat)
                 } catch {
-                        logger.error("\(error.localizedDescription)")
+                        logger.error("Bot.handleTest(): \(error.localizedDescription)")
                 }
         }
         private func handleFeedback(message: Message, text: String) {
@@ -187,13 +184,13 @@ extension ZEGBot {
                         do {
                                 try send(message: response, to: message.chat)
                         } catch {
-                                logger.error("\(error.localizedDescription)")
+                                logger.error("Bot.handleFeedback(): \(error.localizedDescription)")
                         }
                         return
                 }
-                logger.info("Received feedback message: \(textContent)")
-                save(feedback: textContent)
-                
+                let feedback: String = textContent.replacingOccurrences(of: "@jyut_bot", with: "")
+                logger.info("Received feedback message: \(feedback)")
+                save(feedback: feedback)
                 let responseText: String = """
                 收到，記低咗。
                 多謝你嘅反饋同建議！
@@ -202,7 +199,7 @@ extension ZEGBot {
                 do {
                         try send(message: responseText, to: message.chat)
                 } catch {
-                        logger.error("\(error.localizedDescription)")
+                        logger.error("Bot.handleFeedback(): \(error.localizedDescription)")
                 }
         }
         private func fallback(message: Message, text: String) {
@@ -215,7 +212,7 @@ extension ZEGBot {
                 do {
                         try send(message: "我聽唔明 😥", to: message.chat)
                 } catch {
-                        logger.error("\(error.localizedDescription)")
+                        logger.error("Bot.fallback(): \(error.localizedDescription)")
                 }
                 logger.info("Sent fallback() response back.")
         }
@@ -225,12 +222,11 @@ extension ZEGBot {
                 do {
                         try send(message: response, to: message.chat)
                 } catch {
-                        logger.error("\(error.localizedDescription)")
+                        logger.error("Bot.reject(): \(error.localizedDescription)")
                 }
                 logger.notice("Rejected a very large message.")
         }
 }
-
 
 private extension ZEGBot {
         func append(phrase: String) {
@@ -242,7 +238,7 @@ private extension ZEGBot {
                                 try content.write(to: url, atomically: true, encoding: .utf8)
                         } catch {
                                 logger.error("Can not create suggestions.txt")
-                                logger.error("\(error.localizedDescription)")
+                                logger.error("Bot.append(): \(error.localizedDescription)")
                         }
                         logger.info("Created suggestions.txt")
                         logger.info("Saved phrase to suggestions.txt")
@@ -258,7 +254,7 @@ private extension ZEGBot {
                         do {
                                 try handle.close()
                         } catch {
-                                logger.error("\(error.localizedDescription)")
+                                logger.error("Bot.append() try handle.close(): \(error.localizedDescription)")
                         }
                         logger.info("Saved phrase to suggestions.txt")
                 } else {
@@ -275,10 +271,10 @@ private extension ZEGBot {
                                 try content.write(to: url, atomically: true, encoding: .utf8)
                         } catch {
                                 logger.error("Can not create feedback.txt")
-                                logger.error("\(error.localizedDescription)")
+                                logger.error("Bot.save(): \(error.localizedDescription)")
                         }
                         logger.info("Created feedback.txt")
-                        logger.info("Saved feddback message to feedback.txt")
+                        logger.info("Saved feedback message to feedback.txt")
                         return
                 }
                 guard let feedbackData: Data = content.data(using: .utf8) else {
@@ -291,7 +287,7 @@ private extension ZEGBot {
                         do {
                                 try handle.close()
                         } catch {
-                                logger.error("\(error.localizedDescription)")
+                                logger.error("Bot.save() try handle.close(): \(error.localizedDescription)")
                         }
                         logger.info("Saved feedback message to feedback.txt")
                 } else {
