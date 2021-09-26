@@ -93,7 +93,7 @@ extension ZEGBot {
                         reject(message: message)
                         return
                 }
-                let text: String = text.filter { !($0.isASCII || $0.isPunctuation || $0.isWhitespace) }
+                let text: String = text.filter { !($0.isASCII || $0.isPunctuation || $0.isWhitespace || $0.isNewline) }
                 guard !text.isEmpty else {
                         logger.notice("Called ping() with no Cantonese.")
                         do {
@@ -209,12 +209,44 @@ extension ZEGBot {
                         return
                 }
                 logger.notice("Incomprehensible message.")
-                do {
-                        try send(message: "我聽唔明 😥", to: message.chat)
-                } catch {
-                        logger.error("Bot.fallback(): \(error.localizedDescription)")
+
+                guard text.count < 10000 else {
+                        reject(message: message)
+                        return
                 }
-                logger.info("Sent fallback() response back.")
+
+                let text: String = text.filter { !($0.isASCII || $0.isPunctuation || $0.isWhitespace || $0.isNewline) }
+                guard !text.isEmpty else {
+                        do {
+                                try send(message: "我聽唔明 😥", to: message.chat)
+                        } catch {
+                                logger.error("Bot.fallback(): \(error.localizedDescription)")
+                        }
+                        logger.info("Sent fallback() response back.")
+                        return
+                }
+
+                let matchedJyutpings: [String] = JyutpingProvider.match(for: text)
+                var responseText: String = "\(text)：\n"
+                if !matchedJyutpings.isEmpty {
+                        let allJyutpings: String = matchedJyutpings.joined(separator: "\n")
+                        responseText += allJyutpings
+                } else {
+                        var chars: String = text
+                        var jyutpings: [String] = []
+                        while !chars.isEmpty {
+                                let leadingMatch = fetchLeadingJyutping(for: chars)
+                                jyutpings.append(leadingMatch.jyutping)
+                                chars = String(chars.dropFirst(leadingMatch.charCount))
+                        }
+                        let suggestion: String = jyutpings.joined(separator: " ")
+                        responseText += (suggestion.isEmpty ? "?" : suggestion)
+                }
+                do {
+                        try send(message: responseText, to: message.chat)
+                } catch {
+                        logger.error("Bot.handlePing(): \(error.localizedDescription)")
+                }
         }
 
         private func reject(message: Message) {
