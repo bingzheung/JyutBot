@@ -203,20 +203,26 @@ extension ZEGBot {
                 }
         }
         private func fallback(message: Message, text: String) {
+
                 // group chat id < 0
                 guard message.chat.id > 0 else {
                         logger.notice("Incomprehensible message from group chat.")
                         return
                 }
-                logger.notice("Incomprehensible message.")
 
                 guard text.count < 10000 else {
                         reject(message: message)
                         return
                 }
 
+                guard text != "?" else {
+                        handleStartHelp(message: message)
+                        return
+                }
+
                 let text: String = text.filter { !($0.isASCII || $0.isPunctuation || $0.isWhitespace || $0.isNewline) }
                 guard !text.isEmpty else {
+                        logger.notice("Incomprehensible message.")
                         do {
                                 try send(message: "我聽唔明 😥", to: message.chat)
                         } catch {
