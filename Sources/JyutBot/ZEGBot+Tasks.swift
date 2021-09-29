@@ -62,7 +62,7 @@ extension ZEGBot {
                 可向我哋建議添加粵拼詞條。
 
                 撳 /app 獲取
-                粵拼輸入法(iOS)嘅 App Store 連結。
+                粵拼輸入法 App Store 連結。
 
                 發 「/feedback +你嘅反饋」，
                 向 粵拼bot 提出反饋同建議
@@ -141,7 +141,7 @@ extension ZEGBot {
                         reject(message: message)
                         return
                 }
-                let phrase: String = String(text.dropFirst(4)).replacingOccurrences(of: "@jyut_bot", with: "").trimmingCharacters(in: CharacterSet(charactersIn: " \n"))
+                let phrase: String = String(text.dropFirst(4)).replacingOccurrences(of: "@jyut_bot", with: "").trimmingCharacters(in: .newlines)
                 guard !phrase.isEmpty else {
                         logger.notice("Called add() with no phrase.")
                         do {
