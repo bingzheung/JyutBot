@@ -93,7 +93,7 @@ extension ZEGBot {
                         reject(message: message)
                         return
                 }
-                let text: String = text.filter { !($0.isASCII || $0.isPunctuation || $0.isWhitespace || $0.isNewline) }
+                let text: String = text.filter { !($0.isASCII || $0.isPunctuation || $0.isWhitespace) }
                 guard !text.isEmpty else {
                         logger.notice("Called ping() with no Cantonese.")
                         do {
@@ -220,7 +220,7 @@ extension ZEGBot {
                         return
                 }
 
-                let text: String = text.filter { !($0.isASCII || $0.isPunctuation || $0.isWhitespace || $0.isNewline) }
+                let text: String = text.filter { !($0.isASCII || $0.isPunctuation || $0.isWhitespace) }
                 guard !text.isEmpty else {
                         logger.notice("Incomprehensible message.")
                         do {
