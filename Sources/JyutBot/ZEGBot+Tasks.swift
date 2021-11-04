@@ -103,38 +103,22 @@ extension ZEGBot {
                         }
                         return
                 }
-                var responseText: String = "\(text)：\n"
-                let matchedJyutpings: [String] = JyutpingProvider.match(for: text)
-                if !matchedJyutpings.isEmpty {
-                        let allJyutpings: String = matchedJyutpings.joined(separator: "\n")
-                        responseText += allJyutpings
-                } else {
-                        var chars: String = text
-                        var jyutpings: [String] = []
-                        while !chars.isEmpty {
-                                let leadingMatch = fetchLeadingJyutping(for: chars)
-                                jyutpings.append(leadingMatch.jyutping)
-                                chars = String(chars.dropFirst(leadingMatch.charCount))
+                let responseText: String = {
+                        let prefixText: String = text + "：\n"
+                        let matches: [String] = LookupData.search(for: text)
+                        if matches.isEmpty {
+                                let question: String = Array(repeating: "?", count: text.count).joined(separator: " ")
+                                return prefixText + question
+                        } else {
+                                let romanization: String = matches.joined(separator: "\n")
+                                return prefixText + romanization
                         }
-                        let suggestion: String = jyutpings.joined(separator: " ")
-                        responseText += (suggestion.isEmpty ? "?" : suggestion)
-                }
+                }()
                 do {
                         try send(message: responseText, to: message.chat)
                 } catch {
                         logger.error("Bot.handlePing(): \(error.localizedDescription)")
                 }
-        }
-        private func fetchLeadingJyutping(for words: String) -> (jyutping: String, charCount: Int) {
-                var chars: String = words
-                var jyutpings: [String] = []
-                var matchedCount: Int = 0
-                while !chars.isEmpty && jyutpings.isEmpty {
-                        jyutpings = JyutpingProvider.match(for: chars)
-                        matchedCount = chars.count
-                        chars = String(chars.dropLast())
-                }
-                return (jyutpings.first ?? "?", matchedCount)
         }
         private func handleAdd(message: Message, text: String) {
                 guard text.count < 10000 else {
@@ -232,22 +216,18 @@ extension ZEGBot {
                         return
                 }
 
-                let matchedJyutpings: [String] = JyutpingProvider.match(for: text)
-                var responseText: String = "\(text)：\n"
-                if !matchedJyutpings.isEmpty {
-                        let allJyutpings: String = matchedJyutpings.joined(separator: "\n")
-                        responseText += allJyutpings
-                } else {
-                        var chars: String = text
-                        var jyutpings: [String] = []
-                        while !chars.isEmpty {
-                                let leadingMatch = fetchLeadingJyutping(for: chars)
-                                jyutpings.append(leadingMatch.jyutping)
-                                chars = String(chars.dropFirst(leadingMatch.charCount))
+                let responseText: String = {
+                        let prefixText: String = text + "：\n"
+                        let matches: [String] = LookupData.search(for: text)
+                        if matches.isEmpty {
+                                let question: String = Array(repeating: "?", count: text.count).joined(separator: " ")
+                                return prefixText + question
+                        } else {
+                                let romanization: String = matches.joined(separator: "\n")
+                                return prefixText + romanization
                         }
-                        let suggestion: String = jyutpings.joined(separator: " ")
-                        responseText += (suggestion.isEmpty ? "?" : suggestion)
-                }
+                }()
+
                 do {
                         try send(message: responseText, to: message.chat)
                 } catch {
