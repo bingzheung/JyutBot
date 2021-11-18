@@ -125,7 +125,7 @@ extension ZEGBot {
                         reject(message: message)
                         return
                 }
-                let phrase: String = String(text.dropFirst(4)).replacingOccurrences(of: "@jyut_bot", with: "").trimmingCharacters(in: .newlines)
+                let phrase: String = String(text.dropFirst(4)).replacingOccurrences(of: "@jyut_bot", with: "").trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !phrase.isEmpty else {
                         logger.notice("Called add() with no phrase.")
                         do {
