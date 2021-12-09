@@ -42,6 +42,39 @@ struct LookupData {
                         return [suggestion]
                 }
         }
+        static func advancedSearch(for text: String) -> (text: String, romanizations: [String]) {
+                guard !text.isEmpty else { return (text, []) }
+                if let matched: String = match(for: text) {
+                        let romanizations: [String] = matched.components(separatedBy: ".")
+                        return (text, romanizations)
+                } else {
+                        let traditionalText: String = convert(from: text)
+                        let newMatched: String = match(for: traditionalText) ?? ""
+                        guard newMatched.isEmpty else {
+                                let romanizations: [String] = newMatched.components(separatedBy: ".")
+                                return (traditionalText, romanizations)
+                        }
+                        guard text.count != 1 else {
+                                return (text, [])
+                        }
+                        var chars: String = text
+                        var fetches: [String] = []
+                        while !chars.isEmpty {
+                                let leading = fetchLeading(for: chars)
+                                if let romanization: String = leading.romanization {
+                                        fetches.append(romanization)
+                                        let length: Int = max(1, leading.charCount)
+                                        chars = String(chars.dropFirst(length))
+                                } else {
+                                        fetches.append("?")
+                                        chars = String(chars.dropFirst())
+                                }
+                        }
+                        guard !fetches.isEmpty else { return (text, []) }
+                        let suggestion: String = fetches.joined(separator: " ")
+                        return (text, [suggestion])
+                }
+        }
 
         private static func fetchLeading(for word: String) -> (romanization: String?, charCount: Int) {
                 var chars: String = word
@@ -74,5 +107,10 @@ struct LookupData {
                         }
                 }
                 return nil
+        }
+
+        private static func convert(from text: String) -> String {
+                let transformed: String? = text.applyingTransform(StringTransform("Simplified-Traditional"), reverse: false)
+                return transformed ?? text
         }
 }
