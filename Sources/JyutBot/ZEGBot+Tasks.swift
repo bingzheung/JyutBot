@@ -216,14 +216,13 @@ extension ZEGBot {
                 }
 
                 let responseText: String = {
-                        let prefixText: String = text + "：\n"
-                        let matches: [String] = LookupData.search(for: text)
-                        if matches.isEmpty {
+                        let matched = LookupData.advancedSearch(for: text)
+                        if matched.romanizations.isEmpty {
                                 let question: String = Array(repeating: "?", count: text.count).joined(separator: " ")
-                                return prefixText + question
+                                return text + "：\n" + question
                         } else {
-                                let romanization: String = matches.joined(separator: "\n")
-                                return prefixText + romanization
+                                let romanization: String = matched.romanizations.joined(separator: "\n")
+                                return matched.text + "：\n" + romanization
                         }
                 }()
 
