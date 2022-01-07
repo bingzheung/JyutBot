@@ -93,7 +93,7 @@ extension ZEGBot {
                         reject(message: message)
                         return
                 }
-                let text: String = text.filter { !($0.isASCII || $0.isPunctuation || $0.isWhitespace) }
+                let text: String = filteredCJKV(text: text)
                 guard !text.isEmpty else {
                         logger.notice("Called ping() with no Cantonese.")
                         do {
@@ -203,7 +203,7 @@ extension ZEGBot {
                         return
                 }
 
-                let text: String = text.filter { !($0.isASCII || $0.isPunctuation || $0.isWhitespace) }
+                let text: String = filteredCJKV(text: text)
                 guard !text.isEmpty else {
                         logger.notice("Incomprehensible message.")
                         do {
@@ -241,6 +241,10 @@ extension ZEGBot {
                         logger.error("Bot.reject(): \(error.localizedDescription)")
                 }
                 logger.notice("Rejected a very large message.")
+        }
+
+        private func filteredCJKV(text: String) -> String {
+                return text.unicodeScalars.filter({ $0.properties.isIdeographic }).map({ String($0) }).joined()
         }
 }
 
