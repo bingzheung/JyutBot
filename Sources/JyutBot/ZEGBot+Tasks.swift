@@ -93,8 +93,8 @@ extension ZEGBot {
                         reject(message: message)
                         return
                 }
-                let text: String = filteredCJKV(text: text)
-                guard !text.isEmpty else {
+                let filteredText: String = filteredCJKV(text: text)
+                guard !filteredText.isEmpty else {
                         logger.notice("Called ping() with no Cantonese.")
                         do {
                                 try send(message: "/ping +粵語字詞", to: message.chat)
@@ -203,11 +203,11 @@ extension ZEGBot {
                         return
                 }
 
-                let text: String = filteredCJKV(text: text)
-                guard !text.isEmpty else {
+                let filteredText: String = filteredCJKV(text: text)
+                guard !filteredText.isEmpty else {
                         logger.notice("Incomprehensible message.")
                         do {
-                                try send(message: "我聽唔明 😥", to: message.chat)
+                                try send(message: "我聽毋明 😥", to: message.chat)
                         } catch {
                                 logger.error("Bot.fallback(): \(error.localizedDescription)")
                         }
@@ -234,7 +234,7 @@ extension ZEGBot {
         }
 
         private func reject(message: Message) {
-                let response: String = #"唔好發咁長，我處理唔到 😥"#
+                let response: String = #"毋好發咁長，我處理毋到 😥"#
                 do {
                         try send(message: response, to: message.chat)
                 } catch {
