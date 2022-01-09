@@ -104,7 +104,7 @@ extension ZEGBot {
                         return
                 }
                 let responseText: String = {
-                        let matched = LookupData.advancedSearch(for: text)
+                        let matched = lookup(text: text)
                         if matched.romanizations.isEmpty {
                                 let question: String = Array(repeating: "?", count: text.count).joined(separator: " ")
                                 return text + "：\n" + question
@@ -216,7 +216,7 @@ extension ZEGBot {
                 }
 
                 let responseText: String = {
-                        let matched = LookupData.advancedSearch(for: text)
+                        let matched = lookup(text: text)
                         if matched.romanizations.isEmpty {
                                 let question: String = Array(repeating: "?", count: text.count).joined(separator: " ")
                                 return text + "：\n" + question
@@ -245,6 +245,86 @@ extension ZEGBot {
 
         private func filteredCJKV(text: String) -> String {
                 return text.unicodeScalars.filter({ $0.properties.isIdeographic }).map({ String($0) }).joined()
+        }
+        private func ideographicBlocks(text: String) -> [(text: String, isIdeographic: Bool)] {
+                var blocks: [(String, Bool)] = []
+                var ideographicCache: String = ""
+                var otherCache: String = ""
+                var lastWasIdeographic: Bool = true
+                for character in text {
+                        let isIdeographic: Bool = character.unicodeScalars.first?.properties.isIdeographic ?? false
+                        if isIdeographic {
+                                if !lastWasIdeographic && !otherCache.isEmpty {
+                                        let newElement: (String, Bool) = (otherCache, false)
+                                        blocks.append(newElement)
+                                        otherCache = ""
+                                }
+                                ideographicCache.append(character)
+                                lastWasIdeographic = true
+                        } else {
+                                if lastWasIdeographic && !ideographicCache.isEmpty {
+                                        let newElement: (String, Bool) = (ideographicCache, true)
+                                        blocks.append(newElement)
+                                        ideographicCache = ""
+                                }
+                                otherCache.append(character)
+                                lastWasIdeographic = false
+                        }
+                }
+                if !ideographicCache.isEmpty {
+                        let newElement: (String, Bool) = (ideographicCache, true)
+                        blocks.append(newElement)
+                } else if !otherCache.isEmpty {
+                        let newElement: (String, Bool) = (otherCache, false)
+                        blocks.append(newElement)
+                }
+                return blocks
+        }
+        private func lookup(text: String) -> (text: String, romanizations: [String]) {
+                let filtered: String = filteredCJKV(text: text)
+                let search = LookupData.advancedSearch(for: filtered)
+                guard filtered != text else {
+                        return search
+                }
+                guard !(filtered.isEmpty) else {
+                        return search
+                }
+                let transformed = ideographicBlocks(text: text)
+                var handledCount: Int = 0
+                var combinedText: String = ""
+                for item in transformed {
+                        if item.isIdeographic {
+                                let tail = search.text.dropFirst(handledCount)
+                                let suffixCount = tail.count - item.text.count
+                                let selected = tail.dropLast(suffixCount)
+                                combinedText += selected
+                                handledCount += item.text.count
+                        } else {
+                                combinedText += item.text
+                        }
+                }
+                let combinedRomanizations = search.romanizations.map { romanization -> String in
+                        let syllables: [String] = romanization.components(separatedBy: " ")
+                        var index: Int = 0
+                        var newRomanization: String = ""
+                        var lastWasIdeographic: Bool = false
+                        for character in text {
+                                let isIdeographic: Bool = character.unicodeScalars.first?.properties.isIdeographic ?? false
+                                if isIdeographic {
+                                        newRomanization += (syllables[index] + " ")
+                                        index += 1
+                                        lastWasIdeographic = true
+                                } else {
+                                        if lastWasIdeographic {
+                                                newRomanization = String(newRomanization.dropLast())
+                                        }
+                                        newRomanization.append(character)
+                                        lastWasIdeographic = false
+                                }
+                        }
+                        return newRomanization.trimmingCharacters(in: .whitespaces)
+                }
+                return (combinedText, combinedRomanizations)
         }
 }
 
