@@ -32,7 +32,7 @@ extension ZEGBot {
 
                 if text.contains("/start") || text.contains("/help") {
                         handleStartHelp(message: message)
-                } else if text.hasPrefix("/app") {
+                } else if text.hasPrefix("/app") || text.hasPrefix("/ios") {
                         handleApp(message: message)
                 } else if text.contains("/ping") {
                         handlePing(message: message, text: text)
@@ -78,8 +78,8 @@ extension ZEGBot {
 
         private func handleApp(message: Message) {
                 let appInformation: String = """
-                前往 App Store 下載粵拼輸入法：
-                https://apps.apple.com/app/id1509367629
+                前往 App Store 下載 iOS 粵拼輸入法App：
+                https://apps.apple.com/hk/app/id1509367629
                 """
                 do {
                         try send(message: appInformation, to: message.chat)
