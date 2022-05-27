@@ -282,13 +282,9 @@ extension ZEGBot {
         }
         private func lookup(text: String) -> (text: String, romanizations: [String]) {
                 let filtered: String = filteredCJKV(text: text)
-                let search = LookupData.advancedSearch(for: filtered)
-                guard filtered != text else {
-                        return search
-                }
-                guard !(filtered.isEmpty) else {
-                        return search
-                }
+                let search = Lookup.search(for: filtered)
+                guard filtered != text else { return search }
+                guard !(filtered.isEmpty) else { return search }
                 let transformed = ideographicBlocks(text: text)
                 var handledCount: Int = 0
                 var combinedText: String = ""

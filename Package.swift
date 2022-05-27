@@ -1,4 +1,4 @@
-// swift-tools-version:5.5
+// swift-tools-version:5.6
 
 import PackageDescription
 
@@ -9,9 +9,9 @@ let package = Package(
                 .executable(name: "jyutbot", targets: ["JyutBot"])
         ],
         dependencies: [
-                .package(name: "ZEGBot", url: "https://github.com/ShaneQi/ZEGBot.git", from: "4.2.6"),
-                .package(name: "swift-log", url: "https://github.com/apple/swift-log.git", from: "1.4.2"),
-                .package(name: "SQLite3", url: "https://github.com/ososoio/SQLite3.git", from: "1.0.0")
+                .package(url: "https://github.com/ShaneQi/ZEGBot.git", from: "4.2.6"),
+                .package(url: "https://github.com/apple/swift-log.git", from: "1.4.2"),
+                .package(url: "https://github.com/ososoio/SQLite3.git", from: "1.0.0")
         ],
         targets: [
                 .executableTarget(
@@ -24,19 +24,20 @@ let package = Package(
                 ),
                 .testTarget(
                         name: "JyutBotTests",
-                        dependencies: ["JyutBot"]),
+                        dependencies: ["JyutBot"]
+                )
         ]
 )
 #else
 let package = Package(
         name: "JyutBot",
-        platforms: [.macOS(.v11)],
+        platforms: [.macOS(.v12)],
         products: [
                 .executable(name: "jyutbot", targets: ["JyutBot"])
         ],
         dependencies: [
-                .package(name: "ZEGBot", url: "https://github.com/ShaneQi/ZEGBot.git", from: "4.2.6"),
-                .package(name: "swift-log", url: "https://github.com/apple/swift-log.git", from: "1.4.2")
+                .package(url: "https://github.com/ShaneQi/ZEGBot.git", from: "4.2.6"),
+                .package(url: "https://github.com/apple/swift-log.git", from: "1.4.2")
         ],
         targets: [
                 .executableTarget(
@@ -48,7 +49,8 @@ let package = Package(
                 ),
                 .testTarget(
                         name: "JyutBotTests",
-                        dependencies: ["JyutBot"]),
+                        dependencies: ["JyutBot"]
+                )
         ]
 )
 #endif
