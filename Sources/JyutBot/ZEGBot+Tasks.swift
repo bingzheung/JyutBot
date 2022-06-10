@@ -104,6 +104,7 @@ extension ZEGBot {
                         return
                 }
                 let responseText: String = {
+                        let text: String = text.replacingOccurrences(of: "/ping", with: "", options: .anchored).trimmingCharacters(in: .whitespacesAndNewlines)
                         let matched = lookup(text: text)
                         if matched.romanizations.isEmpty {
                                 let question: String = Array(repeating: "?", count: text.count).joined(separator: " ")
@@ -216,6 +217,7 @@ extension ZEGBot {
                 }
 
                 let responseText: String = {
+                        let text: String = text.trimmingCharacters(in: .whitespacesAndNewlines)
                         let matched = lookup(text: text)
                         if matched.romanizations.isEmpty {
                                 let question: String = Array(repeating: "?", count: text.count).joined(separator: " ")
